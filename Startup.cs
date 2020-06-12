@@ -1,3 +1,6 @@
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +38,7 @@ namespace projetWeb
             // will be supplied by the DI container
             services.AddScoped<IEstablishmentRepository, EstablishmentSqlRepository>();
             services.AddScoped<ICountryRepository, CountrySqlRepository>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
