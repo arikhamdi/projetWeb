@@ -6,105 +6,62 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using projetWeb.Models;
+using projetWeb.Repositories;
 
 namespace projetWeb.Controllers
 {
-    [Route("api/Establishments")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class EstablishmentsController : ControllerBase
+    public class EstablishmentsController : Controller
     {
-        private readonly EstablishmentContext _context;
+        private readonly IEstablishmentRepository establishmentRepository = null;
 
-        public EstablishmentsController(EstablishmentContext context)
+        public EstablishmentsController(IEstablishmentRepository establishmentRepository)
         {
-            _context = context;
+            this.establishmentRepository = establishmentRepository;
         }
 
         // GET: api/Establishments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Establishment>>> GetEstablishments()
+        public List<Establishment> Get()
         {
-            return await _context.Establishments.ToListAsync();
+            return establishmentRepository.SelectAll();
         }
 
         // GET: api/Establishments/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Establishment>> GetEstablishment(long id)
+        public Establishment Get(int id)
         {
-            var establishment = await _context.Establishments.FindAsync(id);
-
-            if (establishment == null)
-            {
-                return NotFound();
-            }
-
-            return establishment;
-        }
-
-        // PUT: api/Establishments/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEstablishment(long id, Establishment establishment)
-        {
-            if (id != establishment.ID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(establishment).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EstablishmentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return establishmentRepository.SelectByID(id);
         }
 
         // POST: api/Establishments
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<Establishment>> PostEstablishment(Establishment establishment)
+        public void Post(Establishment est)
         {
-            _context.Establishments.Add(establishment);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetEstablishment", new { id = establishment.ID }, establishment);
-            // return CreatedAtAction(nameof(GetEstablishment), new {id = establishment.ID, establishment});
+            if (ModelState.IsValid)
+            {
+                establishmentRepository.Insert(est);
+            }
         }
+
+        // PUT: api/Establishments/5
+        [HttpPut("{id}")]
+        public void Put(int id, Establishment est)
+        {
+            if (ModelState.IsValid)
+            {
+                establishmentRepository.Update(est);
+            }
+        }
+
+        
 
         // DELETE: api/Establishments/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Establishment>> DeleteEstablishment(long id)
+        public void Delete(int id)
         {
-            var establishment = await _context.Establishments.FindAsync(id);
-            if (establishment == null)
-            {
-                return NotFound();
-            }
-
-            _context.Establishments.Remove(establishment);
-            await _context.SaveChangesAsync();
-
-            return establishment;
-        }
-
-        private bool EstablishmentExists(long id)
-        {
-            return _context.Establishments.Any(e => e.ID == id);
+            establishmentRepository.Delete(id);
         }
     }
 }

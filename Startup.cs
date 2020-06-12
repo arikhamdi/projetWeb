@@ -5,14 +5,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using projetWeb.Models;
+using Microsoft.AspNetCore.Http;
+using projetWeb.Repositories;
 
 namespace projetWeb
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private IConfiguration config = null;
+
+        public Startup(IConfiguration config)
         {
-            Configuration = configuration;
+            this.config = config;
         }
 
         public IConfiguration Configuration { get; }
@@ -20,9 +24,17 @@ namespace projetWeb
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<EstablishmentContext>(opt =>
-                opt.UseInMemoryDatabase("EstablishmentList"));
             services.AddControllers();
+
+            services.AddDbContext<AppDbContext>(options => 
+                options.UseSqlServer(this.config.GetConnectionString("AppDb")));
+
+            // Registering Repositories : The AddScoped() method creates an instance of a
+            // specified type and sets its lifetime to be the current request.
+            // That mean anytime during a request, the same object instance
+            // will be supplied by the DI container
+            services.AddScoped<IEstablishmentRepository, EstablishmentSqlRepository>();
+            services.AddScoped<ICountryRepository, CountrySqlRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,10 +49,7 @@ namespace projetWeb
 
             app.UseRouting();
 
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
+            app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
             });
         }
